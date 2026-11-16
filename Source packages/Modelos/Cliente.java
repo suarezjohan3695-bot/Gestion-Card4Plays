@@ -11,6 +11,13 @@ public class Cliente extends Usuario{
         super(id, nombre, contrasena, Rol.CLIENTE);
     }
 
+    public boolean inscribirseTorneo(Torneo torneo) {
+        if (torneo == null) {
+            return false;
+        }
+        return torneo.agregarParticipante(this);
+    }
+
     public List<String> getIdCompra() {
         return idCompra;
     }

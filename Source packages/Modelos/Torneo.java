@@ -24,10 +24,16 @@ public class Torneo {
         return hoy.isBefore(fecha) || hoy.isEqual(fecha);
     }
 
-    public boolean agregarParticipante(Cliente cliente){
-        if (contadorParticipantes < maxParticipantes){
+    public boolean agregarParticipante(Cliente cliente) {
+        for (int i = 0; i < contadorParticipantes; i++) {
+            if (participantes[i].getIdUsuario().equals(cliente.getIdUsuario())) {
+                return false;
+            }
+        }
+
+        if (contadorParticipantes < maxParticipantes) {
             participantes[contadorParticipantes] = cliente;
-            contadorParticipantes ++;
+            contadorParticipantes++;
             return true;
         }
         return false;

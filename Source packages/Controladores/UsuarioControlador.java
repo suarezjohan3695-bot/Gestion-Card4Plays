@@ -77,4 +77,13 @@ public class UsuarioControlador {
         return usuarios.removeIf(u -> u.getTipoUsuario() == Rol.CLIENTE
                 && u.getIdUsuario().equals(id));
     }
+
+    public Usuario autentificar(String nombre, String contrasena) {
+        for (Usuario u : usuarios) {
+            if (u.auntentificar(nombre, contrasena)) {
+                return u;
+            }
+        }
+        return null;
+    }
 }

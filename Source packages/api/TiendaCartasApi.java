@@ -5,16 +5,17 @@
 package api;
 
 import Controladores.UsuarioControlador;
+import Modelos.Rol;
 import Modelos.Usuario;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
+import spark.Filter;
+import spark.Request;
 import spark.Response;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 import static spark.Spark.*;
 
@@ -43,6 +44,18 @@ public class TiendaCartasApi {
             res.status(500);
             res.body(gson.toJson(Map.of("error", "Error interno: " + e.getMessage())));
         });
+
+        Filter soloAdmin = (req, res) -> {
+            Usuario u = usuarioDeLaPeticion(req);
+            if (u == null) {
+                halt(401, gson.toJson(Map.of("error", "Se requiere autenticación con credenciales válidas")));
+            }
+            if (u.getTipoUsuario() != Rol.ADMINISTRADOR) {
+                halt(403, gson.toJson(Map.of("error", "Acción reservada al administrador")));
+            }
+        };
+        before("/clientes", soloAdmin);
+        before("/clientes/*", soloAdmin);
     }
 
     private static void rutasUsuarios() {
@@ -145,5 +158,22 @@ public class TiendaCartasApi {
     private static boolean tieneTexto(JsonObject body, String campo) {
         return body.has(campo) && !body.get(campo).isJsonNull()
                 && !body.get(campo).getAsString().isBlank();
+    }
+
+    private static Usuario usuarioDeLaPeticion(Request req) {
+        String header = req.headers("Authorization");
+        if (header == null || !header.startsWith("Basic ")) {
+            return null;
+        }
+        try {
+            String texto = new String(Base64.getDecoder().decode(header.substring(6)), StandardCharsets.UTF_8);
+            String[] partes = texto.split(":", 2);
+            if (partes.length != 2) {
+                return null;
+            }
+            return usuarioControlador.autentificar(partes[0], partes[1]);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 }

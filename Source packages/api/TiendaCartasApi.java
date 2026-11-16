@@ -4,8 +4,11 @@
  */
 package api;
 
+import Controladores.TorneoControlador;
 import Controladores.UsuarioControlador;
+import Modelos.Cliente;
 import Modelos.Rol;
+import Modelos.Torneo;
 import Modelos.Usuario;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -15,6 +18,7 @@ import spark.Request;
 import spark.Response;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.*;
 
 import static spark.Spark.*;
@@ -24,6 +28,7 @@ public class TiendaCartasApi {
 
     private static final Gson gson = new Gson();
     private static final UsuarioControlador usuarioControlador = new UsuarioControlador();
+    private static final TorneoControlador torneoControlador = new TorneoControlador();
 
     public static void iniciar() {
         port(4567);
@@ -56,6 +61,19 @@ public class TiendaCartasApi {
         };
         before("/clientes", soloAdmin);
         before("/clientes/*", soloAdmin);
+
+        before("/torneos", (req, res) -> {
+            if (req.requestMethod().equalsIgnoreCase("POST")) {
+                Usuario u = usuarioDeLaPeticion(req);
+                if (u == null) {
+                    halt(401, gson.toJson(Map.of("error", "Se requiere autenticación")));
+                }
+                if (u.getTipoUsuario() != Rol.ADMINISTRADOR) {
+                    halt(403, gson.toJson(Map.of("error", "Acción reservada al administrador")));
+                }
+            }
+        });
+
     }
 
     private static void rutasUsuarios() {
@@ -132,6 +150,113 @@ public class TiendaCartasApi {
         });
     }
 
+    private static void rutasTorneos() {
+        get("/torneos", (req, res) -> {
+            List<Map<String, Object>> lista = new ArrayList<>();
+            for (Torneo t : torneoControlador.listarTorneos()) {
+                lista.add(vistaTorneo(t));
+            }
+            return gson.toJson(lista);
+        });
+
+        get("/torneos/:id", (req, res) -> {
+            Torneo t = torneoControlador.buscarTorneo(req.params(":id"));
+            if (t == null) {
+                return error(res, 404, "Torneo no encontrado");
+            }
+            return gson.toJson(vistaTorneo(t));
+        });
+
+        post("/torneos", (req, res) -> {
+            Usuario u = usuarioDeLaPeticion(req);
+            if (u == null) {
+                return error(res, 401, "Se requiere autenticación con credenciales válidas");
+            }
+            if (u.getTipoUsuario() != Rol.ADMINISTRADOR) {
+                return error(res, 403, "Acción reservada al administrador");
+            }
+
+            JsonObject body = leerBody(req.body());
+            if (body == null || !tieneTexto(body, "idTorneo") || !tieneTexto(body, "nombre") || !tieneTexto(body, "fecha") || !body.has("maxParticipantes")) {
+                return error(res, 400, "Faltan datos obligatorios para crear el torneo");
+            }
+
+            String idTorneo = body.get("idTorneo").getAsString();
+            String nombre = body.get("nombre").getAsString();
+            LocalDate fecha;
+            int maxParticipantes;
+
+            try {
+                fecha = LocalDate.parse(body.get("fecha").getAsString());
+                maxParticipantes = body.get("maxParticipantes").getAsInt();
+            } catch (Exception e) {
+                return error(res, 400, "Formato de fecha inválido (use YYYY-MM-DD) o maxParticipantes no numérico");
+            }
+
+            if (torneoControlador.buscarTorneo(idTorneo) != null) {
+                return error(res, 409, "Ya existe un torneo con ese ID");
+            }
+
+            torneoControlador.crearTorneo(idTorneo, nombre, fecha, maxParticipantes);
+            res.status(201);
+            return gson.toJson(Map.of("mensaje", "Torneo creado exitosamente"));
+        });
+
+        post("/torneos", (req, res) -> {
+            JsonObject body = leerBody(req.body());
+            if (body == null || !tieneTexto(body, "idTorneo") || !tieneTexto(body, "nombre") || !tieneTexto(body, "fecha") || !body.has("maxParticipantes")) {
+                return error(res, 400, "Faltan datos obligatorios para crear el torneo");
+            }
+
+            String idTorneo = body.get("idTorneo").getAsString();
+            String nombre = body.get("nombre").getAsString();
+            LocalDate fecha;
+            int maxParticipantes;
+
+            try {
+                fecha = LocalDate.parse(body.get("fecha").getAsString());
+                maxParticipantes = body.get("maxParticipantes").getAsInt();
+            } catch (Exception e) {
+                return error(res, 400, "Formato de fecha inválido (use YYYY-MM-DD)");
+            }
+
+            if (torneoControlador.buscarTorneo(idTorneo) != null) {
+                return error(res, 409, "Ya existe un torneo con ese ID");
+            }
+
+            torneoControlador.crearTorneo(idTorneo, nombre, fecha, maxParticipantes);
+            res.status(201);
+            return gson.toJson(Map.of("mensaje", "Torneo creado exitosamente"));
+        });
+
+        post("/torneos/:id/inscribirse", (req, res) -> {
+            Usuario u = usuarioDeLaPeticion(req);
+            if (u == null) {
+                return error(res, 401, "Se requiere autenticación con credenciales válidas");
+            }
+            if (u.getTipoUsuario() != Rol.CLIENTE) {
+                return error(res, 403, "Solo los clientes pueden inscribirse a los torneos");
+            }
+
+            String idTorneo = req.params(":id");
+            Torneo torneo = torneoControlador.buscarTorneo(idTorneo);
+            if (torneo == null) {
+                return error(res, 404, "Torneo no encontrado");
+            }
+
+            if (!torneo.isActivo()) {
+                return error(res, 400, "El torneo ya ha finalizado o no está activo");
+            }
+
+            boolean exito = torneoControlador.inscribirClienteTorneo(idTorneo, (Cliente) u);
+            if (!exito) {
+                return error(res, 409, "No fue posible la inscripción: torneo sin cupo o el cliente ya está inscrito");
+            }
+
+            return gson.toJson(Map.of("mensaje", "Inscripción al torneo realizada con éxito"));
+        });
+    }
+
     // ---------- Auxiliares  ----------
 
     private static String error(Response res, int codigo, String mensaje) {
@@ -175,5 +300,15 @@ public class TiendaCartasApi {
         } catch (IllegalArgumentException e) {
             return null;
         }
+    }
+
+    private static Map<String, Object> vistaTorneo(Torneo t) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("idTorneo", t.getIdTorneo());
+        m.put("nombre", t.getNombre());
+        m.put("fecha", t.getFecha().toString());
+        m.put("maxParticipantes", t.getMaxParticipantes());
+        m.put("activo", t.isActivo());
+        return m;
     }
 }

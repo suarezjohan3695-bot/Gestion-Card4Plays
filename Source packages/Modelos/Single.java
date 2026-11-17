@@ -1,0 +1,21 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package Modelos;
+
+/**
+ *
+ * @author morde
+ */
+public class Single extends Producto {
+
+    private Rareza rareza;
+
+    public Single(String idCompra, String nombre, double precioUSD, TasaCambio tasaCambio,
+            Rareza rareza) {
+        super(idCompra, nombre, precioUSD, tasaCambio);
+        this.rareza = rareza;
+    }
+
+}

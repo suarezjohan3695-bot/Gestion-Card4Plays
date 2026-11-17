@@ -13,13 +13,14 @@ public class Producto {
     private String idProducto;
     private String nombre;
     private double precioUSD;
+    private TasaCambio tasaCambio;
 
-    public Producto(String idProducto, String nombre, double precioUSD) {
+    public Producto(String idProducto, String nombre, double precioUSD, TasaCambio tasaCambio) {
         this.idProducto = idProducto;
         this.nombre = nombre;
         this.precioUSD = precioUSD;
+        this.tasaCambio = tasaCambio;
     }
-    
 
     public String getIdProducto() {
         return idProducto;

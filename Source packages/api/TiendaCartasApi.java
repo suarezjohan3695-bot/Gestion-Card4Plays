@@ -34,6 +34,7 @@ public class TiendaCartasApi {
         port(4567);
         configurar();
         rutasUsuarios();
+        rutasTorneos();
 
         System.out.println("API corriendo en http://localhost:4567");
     }
@@ -63,14 +64,19 @@ public class TiendaCartasApi {
         before("/clientes/*", soloAdmin);
 
         before("/torneos", (req, res) -> {
-            if (req.requestMethod().equalsIgnoreCase("POST")) {
-                Usuario u = usuarioDeLaPeticion(req);
-                if (u == null) {
-                    halt(401, gson.toJson(Map.of("error", "Se requiere autenticación")));
-                }
-                if (u.getTipoUsuario() != Rol.ADMINISTRADOR) {
-                    halt(403, gson.toJson(Map.of("error", "Acción reservada al administrador")));
-                }
+            Usuario u = usuarioDeLaPeticion(req);
+            if (u == null) {
+                halt(401, gson.toJson(Map.of("error", "Se requiere autenticación con credenciales válidas")));
+            }
+            if (req.requestMethod().equalsIgnoreCase("POST") && u.getTipoUsuario() != Rol.ADMINISTRADOR) {
+                halt(403, gson.toJson(Map.of("error", "Acción reservada al administrador")));
+            }
+        });
+
+
+        before("/torneos/*", (req, res) -> {
+            if (usuarioDeLaPeticion(req) == null) {
+                halt(401, gson.toJson(Map.of("error", "Se requiere autenticación con credenciales válidas")));
             }
         });
 
@@ -151,6 +157,7 @@ public class TiendaCartasApi {
     }
 
     private static void rutasTorneos() {
+
         get("/torneos", (req, res) -> {
             List<Map<String, Object>> lista = new ArrayList<>();
             for (Torneo t : torneoControlador.listarTorneos()) {
@@ -168,21 +175,14 @@ public class TiendaCartasApi {
         });
 
         post("/torneos", (req, res) -> {
-            Usuario u = usuarioDeLaPeticion(req);
-            if (u == null) {
-                return error(res, 401, "Se requiere autenticación con credenciales válidas");
-            }
-            if (u.getTipoUsuario() != Rol.ADMINISTRADOR) {
-                return error(res, 403, "Acción reservada al administrador");
-            }
-
             JsonObject body = leerBody(req.body());
-            if (body == null || !tieneTexto(body, "idTorneo") || !tieneTexto(body, "nombre") || !tieneTexto(body, "fecha") || !body.has("maxParticipantes")) {
+            if (body == null || !tieneTexto(body, "idTorneo") || !tieneTexto(body, "nombre")
+                    || !tieneTexto(body, "fecha") || !body.has("maxParticipantes")) {
                 return error(res, 400, "Faltan datos obligatorios para crear el torneo");
             }
 
-            String idTorneo = body.get("idTorneo").getAsString();
-            String nombre = body.get("nombre").getAsString();
+            String idTorneo = body.get("idTorneo").getAsString().trim();
+            String nombre = body.get("nombre").getAsString().trim();
             LocalDate fecha;
             int maxParticipantes;
 
@@ -190,36 +190,12 @@ public class TiendaCartasApi {
                 fecha = LocalDate.parse(body.get("fecha").getAsString());
                 maxParticipantes = body.get("maxParticipantes").getAsInt();
             } catch (Exception e) {
-                return error(res, 400, "Formato de fecha inválido (use YYYY-MM-DD) o maxParticipantes no numérico");
+                return error(res, 400, "Fecha inválida (use YYYY-MM-DD) o maxParticipantes no numérico");
             }
 
-            if (torneoControlador.buscarTorneo(idTorneo) != null) {
-                return error(res, 409, "Ya existe un torneo con ese ID");
+            if (maxParticipantes <= 0) {
+                return error(res, 400, "maxParticipantes debe ser mayor que cero");
             }
-
-            torneoControlador.crearTorneo(idTorneo, nombre, fecha, maxParticipantes);
-            res.status(201);
-            return gson.toJson(Map.of("mensaje", "Torneo creado exitosamente"));
-        });
-
-        post("/torneos", (req, res) -> {
-            JsonObject body = leerBody(req.body());
-            if (body == null || !tieneTexto(body, "idTorneo") || !tieneTexto(body, "nombre") || !tieneTexto(body, "fecha") || !body.has("maxParticipantes")) {
-                return error(res, 400, "Faltan datos obligatorios para crear el torneo");
-            }
-
-            String idTorneo = body.get("idTorneo").getAsString();
-            String nombre = body.get("nombre").getAsString();
-            LocalDate fecha;
-            int maxParticipantes;
-
-            try {
-                fecha = LocalDate.parse(body.get("fecha").getAsString());
-                maxParticipantes = body.get("maxParticipantes").getAsInt();
-            } catch (Exception e) {
-                return error(res, 400, "Formato de fecha inválido (use YYYY-MM-DD)");
-            }
-
             if (torneoControlador.buscarTorneo(idTorneo) != null) {
                 return error(res, 409, "Ya existe un torneo con ese ID");
             }
@@ -231,24 +207,19 @@ public class TiendaCartasApi {
 
         post("/torneos/:id/inscribirse", (req, res) -> {
             Usuario u = usuarioDeLaPeticion(req);
-            if (u == null) {
-                return error(res, 401, "Se requiere autenticación con credenciales válidas");
-            }
             if (u.getTipoUsuario() != Rol.CLIENTE) {
                 return error(res, 403, "Solo los clientes pueden inscribirse a los torneos");
             }
 
-            String idTorneo = req.params(":id");
-            Torneo torneo = torneoControlador.buscarTorneo(idTorneo);
+            Torneo torneo = torneoControlador.buscarTorneo(req.params(":id"));
             if (torneo == null) {
                 return error(res, 404, "Torneo no encontrado");
             }
-
             if (!torneo.isActivo()) {
                 return error(res, 400, "El torneo ya ha finalizado o no está activo");
             }
 
-            boolean exito = torneoControlador.inscribirClienteTorneo(idTorneo, (Cliente) u);
+            boolean exito = torneoControlador.inscribirClienteTorneo(torneo.getIdTorneo(), (Cliente) u);
             if (!exito) {
                 return error(res, 409, "No fue posible la inscripción: torneo sin cupo o el cliente ya está inscrito");
             }

@@ -80,7 +80,7 @@ public class UsuarioControlador {
 
     public Usuario autentificar(String nombre, String contrasena) {
         for (Usuario u : usuarios) {
-            if (u.auntentificar(nombre, contrasena)) {
+            if (u.autenticar(nombre, contrasena)) {
                 return u;
             }
         }

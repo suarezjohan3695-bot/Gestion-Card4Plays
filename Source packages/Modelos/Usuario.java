@@ -13,7 +13,7 @@ public abstract class Usuario {
         this.tipoUsuario = tipoUsuario;
     }
 
-    public boolean auntentificar(String nombre, String contrasena){
+    public boolean autenticar(String nombre, String contrasena){
         return this.nombre.equals(nombre) && this.contrasena.equals(contrasena);
     }
 

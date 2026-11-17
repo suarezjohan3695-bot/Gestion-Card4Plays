@@ -64,7 +64,6 @@ public class Torneo {
     }
 
     public int getMaxParticipantes() {
-        maxParticipantes = participantes.length;
         return maxParticipantes;
     }
 

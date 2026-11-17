@@ -4,16 +4,14 @@
  */
 package Cards4play;
 
+import api.TiendaCartasApi;
+
 /**
  *
  * @author morde
  */
 public class Main {
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        System.out.println("This shit works");
+    public static void main(String[] args) {
+        TiendaCartasApi.iniciar();
     }
 }

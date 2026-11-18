@@ -15,11 +15,36 @@ public class Compra {
 
     private String idCompra;
     private LocalDate fechaCompra;
-    private List<Producto> comprados;
+    private List<DetalleCompra> comprados;
 
-    public Compra(String idCompra, LocalDate fechaCompra, List<Producto> comprados) {
+    public Compra(String idCompra, LocalDate fechaCompra, List<DetalleCompra> comprados) {
         this.idCompra = idCompra;
         this.fechaCompra = fechaCompra;
         this.comprados = comprados;
     }
+
+    public String getIdCompra() {
+        return idCompra;
+    }
+
+    public void setIdCompra(String idCompra) {
+        this.idCompra = idCompra;
+    }
+
+    public LocalDate getFechaCompra() {
+        return fechaCompra;
+    }
+
+    public void setFechaCompra(LocalDate fechaCompra) {
+        this.fechaCompra = fechaCompra;
+    }
+
+    public List<DetalleCompra> getComprados() {
+        return comprados;
+    }
+
+    public void setComprados(List<DetalleCompra> comprados) {
+        this.comprados = comprados;
+    }
+    
 }

@@ -20,6 +20,34 @@ public class ControladorInventario {
         this.inventario = new Inventario();
     }
 
+    public Producto buscarProducto(String id) {
+        List<Producto> productos = inventario.getGeneral();
+
+        if (productos.isEmpty()) {
+            return null;
+        }
+        for (Producto p : productos) {
+            if (p.getIdProducto().equals(id)) {
+                return p;
+            }
+
+        }
+        return null;
+    }
+
+    public void agregarProducto(Producto p) {
+        
+        List<Producto> productos = inventario.getGeneral();
+
+        Producto aux = buscarProducto(p.getIdProducto());
+        if (aux == null) {
+            productos.add(p);
+        } else {
+            System.out.println("Ya existe");
+
+        }
+    }
+
     public String ListarProductos() {
         StringBuilder sb = new StringBuilder();
         List<Producto> prod = inventario.getGeneral();

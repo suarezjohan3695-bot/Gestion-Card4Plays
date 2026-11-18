@@ -13,13 +13,16 @@ public class Producto {
     private String idProducto;
     private String nombre;
     private double precioUSD;
+    private double precioCOP;
+    private TasaCambio tasaCambio;
 
-    public Producto(String idProducto, String nombre, double precioUSD) {
+    public Producto(String idProducto, String nombre, double precioUSD, TasaCambio tasaCambio) {
         this.idProducto = idProducto;
         this.nombre = nombre;
         this.precioUSD = precioUSD;
+        this.precioCOP = 0; // Se le dara valor cuando se integre api externa por un medio de un metodo
+        this.tasaCambio = tasaCambio;
     }
-    
 
     public String getIdProducto() {
         return idProducto;
@@ -43,6 +46,22 @@ public class Producto {
 
     public void setPrecioUSD(double precioUSD) {
         this.precioUSD = precioUSD;
+    }
+
+    public double getPrecioCOP() {
+        return precioCOP;
+    }
+
+    public void setPrecioCOP(double precioCOP) {
+        this.precioCOP = precioCOP;
+    }
+
+    public TasaCambio getTasaCambio() {
+        return tasaCambio;
+    }
+
+    public void setTasaCambio(TasaCambio tasaCambio) {
+        this.tasaCambio = tasaCambio;
     }
 
 }

@@ -9,11 +9,13 @@ package Modelos;
  * @author morde
  */
 public class Single extends Producto {
+
     private Rareza rareza;
-         
-    public Single(String idCompra, String nombre, double precioUSD, Rareza rareza){
-        super(idCompra, nombre, precioUSD);
+
+    public Single(String idCompra, String nombre, double precioUSD, TasaCambio tasaCambio,
+            Rareza rareza) {
+        super(idCompra, nombre, precioUSD, tasaCambio);
         this.rareza = rareza;
     }
-   
+
 }

@@ -29,15 +29,12 @@ import static spark.Spark.*;
 public class TiendaCartasApi {
 
     private static final Gson gson = new Gson();
-<<<<<<< HEAD
-    private static final UsuarioControlador usuarioControlador = new UsuarioControlador();
-    private static final TorneoControlador torneoControlador = new TorneoControlador();
+
     private static final ControladorInventario controladorInventario = new ControladorInventario();
-=======
+
     private static final Persistencia persistencia = new Persistencia();
     private static final UsuarioControlador usuarioControlador = new UsuarioControlador(persistencia);
     private static final TorneoControlador torneoControlador = new TorneoControlador(persistencia);
->>>>>>> 9ec546aa2a1b4805cd868e95ced22ebb3b698e43
 
     public static void iniciar() {
         int puerto = obtenerPuerto();

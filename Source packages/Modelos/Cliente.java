@@ -3,12 +3,15 @@ package Modelos;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Cliente extends Usuario{
-    //Cambiar cuando exista la clase compra
-    private List<String> idCompra = new ArrayList<>();
+public class Cliente extends Usuario {
+
+    private List<Compra> HistorialCompra;
+    private Inventario pertenencias;
 
     public Cliente(String id, String nombre, String contrasena) {
         super(id, nombre, contrasena, Rol.CLIENTE);
+        this.HistorialCompra = new ArrayList<>();
+        this.pertenencias = new Inventario();
     }
 
     public boolean inscribirseTorneo(Torneo torneo) {
@@ -18,7 +21,12 @@ public class Cliente extends Usuario{
         return torneo.agregarParticipante(this);
     }
 
-    public List<String> getIdCompra() {
-        return idCompra;
+    public List<Compra> getHistorial() {
+        return HistorialCompra;
     }
+
+    public Inventario getPertenencias() {
+        return pertenencias;
+    }
+
 }

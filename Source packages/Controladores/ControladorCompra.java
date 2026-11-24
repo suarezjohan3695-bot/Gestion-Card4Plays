@@ -4,9 +4,11 @@
  */
 package Controladores;
 
+import Modelos.Cliente;
 import Modelos.Compra;
 import Modelos.DetalleCompra;
 import Modelos.Producto;
+import Modelos.Usuario;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -20,6 +22,26 @@ public class ControladorCompra {
 
     public ControladorCompra(String idCompra, LocalDate fechaCompra, List<DetalleCompra> comprados) {
         this.compra = new Compra(idCompra, fechaCompra, comprados);
+    }
+
+    public Compra buscarCompraId(Cliente cl, String id) {
+        if (cl == null) {
+            return null;
+        }
+        for (Compra c : cl.getHistorial()) {
+            if (c.getIdCompra().equalsIgnoreCase(id)) {
+                return c;
+            }
+        }
+        System.out.println("No existe una compra con este id");
+        return null;
+    }
+
+    public void crearCompra(Cliente cl, Compra compra) {
+        if(buscarCompraId(cl, compra.getIdCompra()) == null){
+            cl.getHistorial().add(compra);
+        }
+
     }
 
     public double calcularTotal() {

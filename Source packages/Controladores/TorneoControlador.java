@@ -1,5 +1,6 @@
 package Controladores;
 
+import Datos.Persistencia;
 import Modelos.Cliente;
 import Modelos.Torneo;
 import java.time.LocalDate;
@@ -7,16 +8,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TorneoControlador {
+    private final Persistencia persistencia;
     private List<Torneo> listaTorneos;
 
-    public TorneoControlador() {
-        this.listaTorneos = new ArrayList<>();
-    }
+    public TorneoControlador(Persistencia persistencia) {
+    this.persistencia = persistencia;
+    this.listaTorneos = new ArrayList<>(persistencia.cargarTorneos());
+}
 
-    public void crearTorneo(String idTorneo, String nombre, LocalDate fecha, int maxParticipantes){
-        Torneo nuevoTorneo = new Torneo(idTorneo, nombre, fecha, maxParticipantes);
-        listaTorneos.add(nuevoTorneo);
-    }
+    public void crearTorneo(String idTorneo, String nombre, LocalDate fecha, int maxParticipantes) {
+    listaTorneos.add(new Torneo(idTorneo, nombre, fecha, maxParticipantes));
+    persistencia.guardarTorneos(listaTorneos);
+}
 
     public Torneo buscarTorneo(String idTorneo){
         for (Torneo torneo : listaTorneos){
@@ -28,25 +31,28 @@ public class TorneoControlador {
     }
 
     public boolean eliminarTorneo(String idTorneo) {
-        Torneo torneo = buscarTorneo(idTorneo);
-        if (torneo != null) {
-            listaTorneos.remove(torneo);
-            return true;
-        }
-        return false;
+    Torneo torneo = buscarTorneo(idTorneo);
+    if (torneo != null) {
+        listaTorneos.remove(torneo);
+        persistencia.guardarTorneos(listaTorneos);
+        return true;
     }
+    return false;
+}
 
 
-    public boolean inscribirClienteTorneo(String idTorneo, Cliente cliente){
-        Torneo torneo = buscarTorneo(idTorneo);
-
-        if (torneo != null){
-            if (torneo.isActivo()){
-                return torneo.agregarParticipante(cliente);
-            }
+    public boolean inscribirClienteTorneo(String idTorneo, Cliente cliente) {
+    Torneo torneo = buscarTorneo(idTorneo);
+    if (torneo != null && torneo.isActivo()) {
+        boolean ok = torneo.agregarParticipante(cliente);
+        if (ok) {
+            persistencia.guardarTorneos(listaTorneos);
         }
-        return false;
+        return ok;
     }
+    return false;
+    }
+    
     public List<Torneo> listarTorneos() {
         return this.listaTorneos;
     }

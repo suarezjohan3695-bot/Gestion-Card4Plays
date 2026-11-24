@@ -1,5 +1,6 @@
 package Controladores;
 
+import Datos.Persistencia;
 import Modelos.Administrador;
 import Modelos.Cliente;
 import Modelos.Rol;
@@ -11,13 +12,31 @@ import java.util.UUID;
 
 public class UsuarioControlador {
 
+    private final Persistencia persistencia;
     private final List<Usuario> usuarios = new ArrayList<>();
 
-    public UsuarioControlador() {
+    public UsuarioControlador(Persistencia persistencia) {
+        
+        this.persistencia = persistencia;
+        usuarios.addAll(persistencia.cargarUsuarios());
 
-        usuarios.add(new Administrador("ADM-001", "admin", "admin123"));
+        boolean hayAdmin = false;
+        for (Usuario u : usuarios) {
+            if (u.getTipoUsuario() == Rol.ADMINISTRADOR) {
+                hayAdmin = true;
+            }
+        }
+        if (!hayAdmin) {
+            usuarios.add(new Administrador("ADM-001", "admin", "admin123"));
+            guardar();
+        }
     }
 
+    private void guardar() {
+        persistencia.guardarUsuarios(usuarios);
+    }
+
+    
 
     public boolean datosValidos(String nombre, String contrasena) {
         return nombre != null && !nombre.isBlank()
@@ -38,6 +57,7 @@ public class UsuarioControlador {
     public Cliente addCliente(String nombre, String contrasena) {
         Cliente c = new Cliente(UUID.randomUUID().toString(), nombre.trim(), contrasena.trim());
         usuarios.add(c);
+        guardar();
         return c;
     }
 
@@ -70,12 +90,17 @@ public class UsuarioControlador {
         if (contrasena != null) {
             u.setContrasena(contrasena.trim());
         }
+        guardar();
     }
 
 
     public boolean eliminar(String id) {
-        return usuarios.removeIf(u -> u.getTipoUsuario() == Rol.CLIENTE
-                && u.getIdUsuario().equals(id));
+        boolean borrado = usuarios.removeIf(u -> u.getTipoUsuario() == Rol.CLIENTE
+            && u.getIdUsuario().equals(id));
+        if (borrado) {
+            guardar();
+        }
+        return borrado;
     }
 
     public Usuario autentificar(String nombre, String contrasena) {

@@ -4,9 +4,11 @@
  */
 package api;
 
+import Controladores.ControladorInventario;
 import Controladores.TorneoControlador;
 import Controladores.UsuarioControlador;
 import Modelos.Cliente;
+import Modelos.Producto;
 import Modelos.Rol;
 import Modelos.Torneo;
 import Modelos.Usuario;
@@ -23,20 +25,31 @@ import java.util.*;
 
 import static spark.Spark.*;
 
-
 public class TiendaCartasApi {
 
     private static final Gson gson = new Gson();
     private static final UsuarioControlador usuarioControlador = new UsuarioControlador();
     private static final TorneoControlador torneoControlador = new TorneoControlador();
+    private static final ControladorInventario controladorInventario = new ControladorInventario();
 
     public static void iniciar() {
-        port(4567);
+        int puerto = obtenerPuerto();
+        port(puerto);
         configurar();
         rutasUsuarios();
         rutasTorneos();
+        rutasProductos();
 
-        System.out.println("API corriendo en http://localhost:4567");
+        System.out.println("API corriendo en http://localhost:4547");
+    }
+
+    private static int obtenerPuerto() {
+        String puerto = System.getenv("PORT");
+        if (puerto != null) {
+            return Integer.parseInt(puerto);
+
+        }
+        return 4547;
     }
 
     private static void configurar() {
@@ -73,7 +86,6 @@ public class TiendaCartasApi {
             }
         });
 
-
         before("/torneos/*", (req, res) -> {
             if (usuarioDeLaPeticion(req) == null) {
                 halt(401, gson.toJson(Map.of("error", "Se requiere autenticación con credenciales válidas")));
@@ -87,7 +99,7 @@ public class TiendaCartasApi {
         get("/clientes", (req, res) -> {
             List<Map<String, Object>> lista = new ArrayList<>();
             for (Usuario u : usuarioControlador.listarClientes()) {
-                lista.add(vista(u));
+                lista.add(vistaUsuario(u));
             }
             return gson.toJson(lista);
         });
@@ -97,7 +109,7 @@ public class TiendaCartasApi {
             if (u == null) {
                 return error(res, 404, "Cliente no encontrado");
             }
-            return gson.toJson(vista(u));
+            return gson.toJson(vistaUsuario(u));
         });
 
         post("/clientes", (req, res) -> {
@@ -113,7 +125,7 @@ public class TiendaCartasApi {
             }
             Usuario nuevo = usuarioControlador.addCliente(nombre, contrasena);
             res.status(201);
-            return gson.toJson(vista(nuevo));
+            return gson.toJson(vistaUsuario(nuevo));
         });
 
         patch("/clientes/:id", (req, res) -> {
@@ -145,7 +157,7 @@ public class TiendaCartasApi {
                 contrasena = body.get("contrasena").getAsString();
             }
             usuarioControlador.actualizar(actual, nombre, contrasena);
-            return gson.toJson(vista(actual));
+            return gson.toJson(vistaUsuario(actual));
         });
 
         delete("/clientes/:id", (req, res) -> {
@@ -228,14 +240,35 @@ public class TiendaCartasApi {
         });
     }
 
-    // ---------- Auxiliares  ----------
+    public static void rutasProductos() {
+        get("/Productos", (req, res) -> {
+            List<Producto> prod = controladorInventario.getInventario();
+            if (prod != null) {
+                return gson.toJson(controladorInventario.getInventario());
+            }
+            return error(res, 404, "Inventario vacio");
+        });
 
+        post("/Productos", (req, res) -> {
+            Producto producto = gson.fromJson(req.body(), Producto.class);
+            if (producto == null || producto.getNombre() == null
+                    || producto.getIdProducto() == null) {
+                return error(res, 400, "Valor tal por completar");
+            }
+            controladorInventario.agregarProducto(producto);
+            res.status(201);
+
+            return gson.toJson(producto);
+        });
+    }
+
+    // ---------- Auxiliares  ----------
     private static String error(Response res, int codigo, String mensaje) {
         res.status(codigo);
         return gson.toJson(Map.of("error", mensaje));
     }
 
-    private static Map<String, Object> vista(Usuario u) {
+    private static Map<String, Object> vistaUsuario(Usuario u) {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("idUsuario", u.getIdUsuario());
         m.put("nombre", u.getNombre());

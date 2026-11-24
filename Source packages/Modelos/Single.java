@@ -12,9 +12,9 @@ public class Single extends Producto {
 
     private Rareza rareza;
 
-    public Single(String idCompra, String nombre, double precioUSD, TasaCambio tasaCambio,
+    public Single(String idCompra, String nombre, double precioUSD,
             Rareza rareza) {
-        super(idCompra, nombre, precioUSD, tasaCambio);
+        super(idCompra, nombre, precioUSD);
         this.rareza = rareza;
     }
 

@@ -63,5 +63,8 @@ public class ControladorInventario {
         return sb.toString();
 
     }
+    public List<Producto> getInventario(){
+        return inventario.getGeneral();
+    }
 
 }

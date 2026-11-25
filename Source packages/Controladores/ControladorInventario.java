@@ -4,8 +4,11 @@
  */
 package Controladores;
 
+
+import Datos.Persistencia;
 import Modelos.Inventario;
 import Modelos.Producto;
+import Modelos.TasaCambio;
 import java.util.List;
 
 /**
@@ -15,10 +18,16 @@ import java.util.List;
 public class ControladorInventario {
 
     private Inventario inventario;
+    private final Persistencia persistencia;
 
-    public ControladorInventario() {
-        this.inventario = new Inventario();
+    public ControladorInventario(Persistencia persistencia, TasaCambio tasa) {
+    this.persistencia = persistencia;
+    this.inventario = new Inventario();
+    for (Producto p : persistencia.cargarProductos()) {
+        p.setTasaCambio(tasa); 
+        inventario.getGeneral().add(p);
     }
+}
 
     public Producto buscarProducto(String id) {
         List<Producto> productos = inventario.getGeneral();
@@ -35,17 +44,13 @@ public class ControladorInventario {
         return null;
     }
 
-    public void agregarProducto(Producto p) {
-        
-        List<Producto> productos = inventario.getGeneral();
-
-        Producto aux = buscarProducto(p.getIdProducto());
-        if (aux == null) {
-            productos.add(p);
-        } else {
-            System.out.println("Ya existe");
-
-        }
+    public boolean agregarProducto(Producto p) {
+    if (buscarProducto(p.getIdProducto()) != null) {
+        return false;
+    }
+    inventario.getGeneral().add(p);
+    guardar();
+    return true;
     }
 
     public String ListarProductos() {
@@ -62,6 +67,14 @@ public class ControladorInventario {
         sb.append("----------------");
         return sb.toString();
 
+    }
+    
+    public List<Producto> listarProductos() {
+        return inventario.getGeneral();
+    }
+
+    public void guardar() {
+        persistencia.guardarProductos(inventario.getGeneral());
     }
     public List<Producto> getInventario(){
         return inventario.getGeneral();

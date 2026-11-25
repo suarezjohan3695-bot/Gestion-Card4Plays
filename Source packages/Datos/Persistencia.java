@@ -24,6 +24,8 @@ public class Persistencia {
     private final Path carpeta;
     private final Path archivoUsuarios;
     private final Path archivoTorneos;
+    private final Path archivoProductos;
+    private final Path archivoCompras;
     private final Gson gson;
 
     public Persistencia() {
@@ -34,6 +36,8 @@ public class Persistencia {
         carpeta = Paths.get(dir).toAbsolutePath();
         archivoUsuarios = carpeta.resolve("usuarios.json");
         archivoTorneos = carpeta.resolve("torneos.json");
+        archivoProductos = carpeta.resolve("productos.json");
+        archivoCompras = carpeta.resolve("compras.json");
 
         gson = new GsonBuilder()
                 .setPrettyPrinting()
@@ -42,6 +46,7 @@ public class Persistencia {
                 .registerTypeAdapter(LocalDate.class,
                         (JsonDeserializer<LocalDate>) (j, t, c) -> LocalDate.parse(j.getAsString()))
                 .registerTypeAdapter(Usuario.class, new AdaptadorPoli<Usuario>("Modelos"))
+                .registerTypeAdapter(Producto.class, new AdaptadorPoli<Producto>("Modelos"))
                 .create();
     }
 
@@ -61,6 +66,24 @@ public class Persistencia {
 
     public void guardarTorneos(List<Torneo> torneos) {
         escribir(archivoTorneos, torneos, new TypeToken<List<Torneo>>() {}.getType());
+    }
+    
+    // ---------- Productos ----------
+    public List<Producto> cargarProductos() {
+        return leer(archivoProductos, new TypeToken<List<Producto>>() {}.getType());
+    }
+
+    public void guardarProductos(List<Producto> productos) {
+        escribir(archivoProductos, productos, new TypeToken<List<Producto>>() {}.getType());
+    }
+
+    // ---------- Compras ----------
+    public List<Compra> cargarCompras() {
+        return leer(archivoCompras, new TypeToken<List<Compra>>() {}.getType());
+    }
+
+    public void guardarCompras(List<Compra> compras) {
+        escribir(archivoCompras, compras, new TypeToken<List<Compra>>() {}.getType());
     }
 
     // ---------- Utilidades ----------

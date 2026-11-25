@@ -4,6 +4,8 @@
  */
 package Controladores;
 
+import Datos.Persistencia;
+import java.util.ArrayList;
 import Modelos.Cliente;
 import Modelos.Compra;
 import Modelos.DetalleCompra;
@@ -18,34 +20,34 @@ import java.util.List;
  */
 public class ControladorCompra {
 
-    private Compra compra;
+    private final Persistencia persistencia;
+    private final List<Compra> compras;
 
-    public ControladorCompra(String idCompra, LocalDate fechaCompra, List<DetalleCompra> comprados) {
-        this.compra = new Compra(idCompra, fechaCompra, comprados);
-    }
+    public ControladorCompra(Persistencia persistencia) {
+    this.persistencia = persistencia;
+    this.compras = new ArrayList<>(persistencia.cargarCompras());
+}
 
-    public Compra buscarCompraId(Cliente cl, String id) {
-        if (cl == null) {
-            return null;
-        }
-        for (Compra c : cl.getHistorial()) {
+    public Compra buscarCompraId(String id) {
+        for (Compra c : compras) {
             if (c.getIdCompra().equalsIgnoreCase(id)) {
                 return c;
             }
         }
-        System.out.println("No existe una compra con este id");
         return null;
     }
 
-    public void crearCompra(Cliente cl, Compra compra) {
-        if(buscarCompraId(cl, compra.getIdCompra()) == null){
-            cl.getHistorial().add(compra);
+    public boolean crearCompra(Compra compra) {
+        if (buscarCompraId(compra.getIdCompra()) != null) {
+            return false;
         }
-
+        compras.add(compra);
+        persistencia.guardarCompras(compras);
+        return true;
     }
 
-    public double calcularTotal() {
-        if (compra.getComprados().isEmpty() || compra.getComprados() == null) {
+    public double calcularTotal(Compra compra) {
+        if (compra == null || compra.getComprados() == null || compra.getComprados().isEmpty()) {
             return 0;
         }
         double total = 0;
@@ -54,5 +56,15 @@ public class ControladorCompra {
         }
         return total;
 
+    }
+    
+    public List<Compra> historialDeCliente(String idCliente) {
+        List<Compra> historial = new ArrayList<>();
+        for (Compra c : compras) {
+            if (c.getIdCliente().equals(idCliente)) {
+                historial.add(c);
+            }
+        }
+        return historial;
     }
 }

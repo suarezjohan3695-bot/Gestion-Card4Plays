@@ -6,6 +6,7 @@ package Datos;
 
 import com.google.gson.*;
 import java.lang.reflect.Type;
+import java.time.LocalDate;
 
 /**
  *
@@ -13,6 +14,13 @@ import java.lang.reflect.Type;
  */
 public class AdaptadorPoli<T> implements JsonSerializer<T>, JsonDeserializer<T> {
     private final String paquete;
+    
+    private final Gson base = new GsonBuilder()
+            .registerTypeAdapter(LocalDate.class,
+                    (JsonSerializer<LocalDate>) (f, t, c) -> new JsonPrimitive(f.toString()))
+            .registerTypeAdapter(LocalDate.class,
+                    (JsonDeserializer<LocalDate>) (j, t, c) -> LocalDate.parse(j.getAsString()))
+            .create();
 
     public AdaptadorPoli(String paquete) {
         this.paquete = paquete;

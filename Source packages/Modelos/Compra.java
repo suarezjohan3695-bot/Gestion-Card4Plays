@@ -14,13 +14,19 @@ import java.util.List;
 public class Compra {
 
     private String idCompra;
+    private String idCliente;
     private LocalDate fechaCompra;
     private List<DetalleCompra> comprados;
 
-    public Compra(String idCompra, LocalDate fechaCompra, List<DetalleCompra> comprados) {
+    public Compra(String idCompra,String idCliente, LocalDate fechaCompra, List<DetalleCompra> comprados) {
         this.idCompra = idCompra;
+        this.idCliente = idCliente;
         this.fechaCompra = fechaCompra;
         this.comprados = comprados;
+    }
+    
+    public String getIdCliente() {        
+        return idCliente;
     }
 
     public String getIdCompra() {

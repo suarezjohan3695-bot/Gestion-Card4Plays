@@ -4,6 +4,7 @@
  */
 package api;
 
+import Controladores.ControladorCompra;
 import Controladores.ControladorInventario;
 import Controladores.TorneoControlador;
 import Controladores.UsuarioControlador;
@@ -11,6 +12,7 @@ import Datos.Persistencia;
 import Modelos.Cliente;
 import Modelos.Producto;
 import Modelos.Rol;
+import Modelos.TasaCambio;
 import Modelos.Torneo;
 import Modelos.Usuario;
 import com.google.gson.Gson;
@@ -29,15 +31,14 @@ import static spark.Spark.*;
 public class TiendaCartasApi {
 
     private static final Gson gson = new Gson();
-<<<<<<< HEAD
-    private static final UsuarioControlador usuarioControlador = new UsuarioControlador();
-    private static final TorneoControlador torneoControlador = new TorneoControlador();
-    private static final ControladorInventario controladorInventario = new ControladorInventario();
-=======
     private static final Persistencia persistencia = new Persistencia();
+    private static final TasaCambio tasaCambio = new TasaCambio();
     private static final UsuarioControlador usuarioControlador = new UsuarioControlador(persistencia);
     private static final TorneoControlador torneoControlador = new TorneoControlador(persistencia);
->>>>>>> 9ec546aa2a1b4805cd868e95ced22ebb3b698e43
+    private static final ControladorInventario controladorInventario =
+        new ControladorInventario(persistencia, tasaCambio);
+    private static final ControladorCompra controladorCompra = new ControladorCompra(persistencia);
+
 
     public static void iniciar() {
         int puerto = obtenerPuerto();

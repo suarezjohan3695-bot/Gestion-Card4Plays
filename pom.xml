@@ -7,11 +7,11 @@
     <packaging>jar</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>25</maven.compiler.release>
-        <maven.compiler.source>25</maven.compiler.source>
-        <maven.compiler.target>25</maven.compiler.target>
+        <maven.compiler.release>17</maven.compiler.release>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
 
-        <exec.mainClass>Main.Cards4play.gestioncards4play.GestionCards4play</exec.mainClass>
+        <exec.mainClass>Cards4play.Main</exec.mainClass>
     </properties>
     <dependencies>
         <dependency>
@@ -28,14 +28,14 @@
         
     </dependencies>
     <build>
-        <sourceDirectory>Source Packages</sourceDirectory>
+        <sourceDirectory>Source packages</sourceDirectory>
         <plugins>
   <plugin>
     <artifactId>maven-assembly-plugin</artifactId>
     <version>3.6.0</version>
     <configuration>
       <archive>
-        <manifest><mainClass>Main</mainClass></manifest>
+        <manifest><mainClass>Cards4play.Main</mainClass></manifest>
       </archive>
       <descriptorRefs>
         <descriptorRef>jar-with-dependencies</descriptorRef>

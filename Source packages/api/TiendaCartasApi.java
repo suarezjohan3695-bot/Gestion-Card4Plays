@@ -36,9 +36,8 @@ public class TiendaCartasApi {
     private static final UsuarioControlador usuarioControlador = new UsuarioControlador(persistencia);
     private static final TorneoControlador torneoControlador = new TorneoControlador(persistencia);
     private static final ControladorInventario controladorInventario =
-        new ControladorInventario(persistencia, tasaCambio);
+            new ControladorInventario(persistencia, tasaCambio);
     private static final ControladorCompra controladorCompra = new ControladorCompra(persistencia);
-
 
     public static void iniciar() {
         int puerto = obtenerPuerto();
@@ -48,7 +47,7 @@ public class TiendaCartasApi {
         rutasTorneos();
         rutasProductos();
 
-        System.out.println("API corriendo en http://localhost:4547");
+        System.out.println("API corriendo en http://localhost:{puerto}");
     }
 
     private static int obtenerPuerto() {
@@ -57,7 +56,7 @@ public class TiendaCartasApi {
             return Integer.parseInt(puerto);
 
         }
-        return 4547;
+        return 4567;
     }
 
     private static void configurar() {
@@ -251,7 +250,7 @@ public class TiendaCartasApi {
     public static void rutasProductos() {
         get("/Productos", (req, res) -> {
             List<Producto> prod = controladorInventario.getInventario();
-            if (prod != null) {
+            if (!prod.isEmpty()) {
                 return gson.toJson(controladorInventario.getInventario());
             }
             return error(res, 404, "Inventario vacio");

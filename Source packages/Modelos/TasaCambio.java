@@ -17,10 +17,24 @@ import java.time.Duration;
  */
 public class TasaCambio {
 
+    private static double TASA_DEFECTO = leerTasaDefecto();
     private double cop;
 
     public TasaCambio() throws Exception {
         this.cop = extraerCOP();
+    }
+
+    public static double leerTasaDefecto() {
+        String ENV = System.getenv("TASA_DEFECTO");
+        if (ENV == null || ENV.isBlank()) {
+            return 3500;
+        }
+        try {
+            return Double.parseDouble(ENV);
+        } catch (NumberFormatException e) {
+            System.out.println("TASA_DEFECTO invalida: " + ENV + ". Se usa 3900.0");
+            return 3500;
+        }
     }
 
     public static String TasaCambioAPI() throws Exception {
@@ -41,20 +55,18 @@ public class TasaCambio {
 
     public static double extraerCOP() throws Exception {
 
-        String COP = "";
+        
         try {
             String json = TasaCambioAPI();
             int inicio = json.indexOf("\"COP\":") + 6;
             int fin = json.indexOf(",", inicio);
-
-            COP = json.substring(inicio, fin);
-        } catch (HttpTimeoutException e) {
-            System.out.println("La API no respondio: se obtiene tasa por defecto: ");
-            COP = "34000";
+            String COP = json.substring(inicio, fin);
+            System.out.println("API funciono correctamente");
+            return Double.parseDouble(COP);
+        } catch (Exception e) {
+            System.out.println("La API no respondio: se obtiene tasa por defecto: " + TASA_DEFECTO);
+            return TASA_DEFECTO;
         }
-        
-        return Double.parseDouble(COP);
-
     }
 
     public double getCop() {

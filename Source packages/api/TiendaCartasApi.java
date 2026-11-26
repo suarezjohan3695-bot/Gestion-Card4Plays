@@ -9,9 +9,15 @@ import Controladores.ControladorInventario;
 import Controladores.TorneoControlador;
 import Controladores.UsuarioControlador;
 import Datos.Persistencia;
+import Modelos.Accesorio;
+import Modelos.Booster;
 import Modelos.Cliente;
+import Modelos.Inventario;
 import Modelos.Producto;
+import Modelos.ProductoSellado;
+import Modelos.Rareza;
 import Modelos.Rol;
+import Modelos.Single;
 import Modelos.TasaCambio;
 import Modelos.Torneo;
 import Modelos.Usuario;
@@ -25,6 +31,7 @@ import spark.Response;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.*;
+import spark.Route;
 
 import static spark.Spark.*;
 
@@ -34,8 +41,8 @@ public class TiendaCartasApi {
     private static final Persistencia persistencia = new Persistencia();
     private static final UsuarioControlador usuarioControlador = new UsuarioControlador(persistencia);
     private static final TorneoControlador torneoControlador = new TorneoControlador(persistencia);
-    private static final ControladorInventario controladorInventario =
-            new ControladorInventario(persistencia);
+    private static final ControladorInventario controladorInventario
+            = new ControladorInventario(persistencia);
     private static final ControladorCompra controladorCompra = new ControladorCompra(persistencia);
 
     public static void iniciar() {
@@ -46,7 +53,7 @@ public class TiendaCartasApi {
         rutasTorneos();
         rutasProductos();
 
-        System.out.println("API corriendo en http://localhost:{puerto}");
+        System.out.println("API corriendo en http://localhost:" + puerto);
     }
 
     private static int obtenerPuerto() {
@@ -252,20 +259,142 @@ public class TiendaCartasApi {
             if (!prod.isEmpty()) {
                 return gson.toJson(controladorInventario.getInventario());
             }
-            return error(res, 404, "Inventario vacio");
+            return ("Inventario vacio");
+        });
+        get("/Productos/:id", (req, res) -> {
+
+            Usuario u = usuarioControlador.buscarCliente(":id");
+            if (u != null) {
+                return error(res, 404, "Usuario no encontrado");
+            } else if (u.getTipoUsuario() == Rol.CLIENTE) {
+                Cliente c = (Cliente) u;
+                if (c.getPertenencias() == null) {
+                    return gson.toJson("Sin pertenencias aun");
+                }
+                res.status(200);
+                return gson.toJson(c.getPertenencias());
+            }
+            return error(res, 401, "Admin no autorizado");
+
+        });
+        get("/Productos/:idUsuario/abrirBooster/:idProducto", (req, res) -> {
+            Usuario u = usuarioControlador.buscarCliente(":idUsuario");
+            if (u == null) {
+                return error(res, 404, "Usuario no encontrado");
+
+            } else if (u.getTipoUsuario() != Rol.CLIENTE) {
+                return error(res, 401, "Admin no autorizado");
+            }
+            Cliente c = (Cliente) u;
+            Inventario ip = c.getPertenencias();
+            if (ip.getGeneral().isEmpty()) {
+                return ("Tu inventario esta vacio"); 
+            }
+                if(controladorInventario.buscarBooster(ip,":idProducto")){
+                    
+                }
+            
+
+        
+            
         });
 
-        post("/Productos", (req, res) -> {
-            Producto producto = gson.fromJson(req.body(), Producto.class);
-            if (producto == null || producto.getNombre() == null
-                    || producto.getIdProducto() == null) {
-                return error(res, 400, "Valor tal por completar");
+        post("/Productos/Single", (req, res) -> {
+            Usuario u = usuarioDeLaPeticion(req);
+            if (u.getTipoUsuario() != Rol.ADMINISTRADOR) {
+                return error(res, 403, "Accion reservada para administradores");
             }
-            controladorInventario.agregarProducto(producto);
+            Single s = gson.fromJson(req.body(), Single.class);
+            //Single(String idCompra, String nombre, double precioUSD, Rareza rareza)
+            if (s.getIdProducto() == null) {
+                return error(res, 400, "Falta el 'IdProducto'");
+            }
+            if (s.getNombre() == null) {
+                return error(res, 400, "Pon el 'nombre' del producto");
+            }
+            if (s.getPrecioUSD() == 0) {
+                return error(res, 400, "Cual es el valor de 'precioUSD'?");
+            }
+            if (s.getRareza() == null) {
+                return error(res, 400, "La carta debe de tener una 'rareza'");
+            }
+            controladorInventario.agregarProducto(s);
             res.status(201);
 
-            return gson.toJson(producto);
+            return gson.toJson("Single regitrado" + s);
         });
+
+        post("/Productos/Booster", (req, res) -> {
+            Usuario u = usuarioDeLaPeticion(req);
+            if (u.getTipoUsuario() != Rol.ADMINISTRADOR) {
+                return error(res, 403, "Accion reservada para administradores");
+            }
+            Producto p = gson.fromJson(req.body(), Producto.class);
+            List<Single> contenido = controladorInventario.contenidoBooster();
+            Booster b = new Booster(contenido, p.getIdProducto(), p.getNombre(),
+                    p.getPrecioUSD());
+            if (b.getIdProducto() == null) {
+                return error(res, 400, "Falta el 'IdProducto'");
+            }
+            if (b.getNombre() == null) {
+                return error(res, 400, "Pon el 'nombre' del producto");
+            }
+            if (b.getPrecioUSD() == 0) {
+                return error(res, 400, "Cual es el valor de 'precioUSD'?");
+            }
+            if (b.getContenido() == null) {
+                return error(res, 400, "No hay cartas suficientes para crear un booster");
+            }
+            controladorInventario.agregarProducto(b);
+            res.status(201);
+
+            return gson.toJson("Booster registrado" + b);
+        });
+        post("/Productos/Accesorio", (req, res) -> {
+            Usuario u = usuarioDeLaPeticion(req);
+            if (u.getTipoUsuario() != Rol.ADMINISTRADOR) {
+                return error(res, 403, "Accion reservada para administradores");
+            }
+            Accesorio a = gson.fromJson(req.body(), Accesorio.class);
+
+            if (a.getIdProducto() == null) {
+                return error(res, 400, "Falta el 'IdProducto'");
+            }
+            if (a.getNombre() == null) {
+                return error(res, 400, "Pon el 'nombre' del producto");
+            }
+            if (a.getPrecioUSD() == 0) {
+                return error(res, 400, "Cual es el valor de 'precioUSD'?");
+            }
+
+            controladorInventario.agregarProducto(a);
+            res.status(201);
+
+            return gson.toJson("Accesorio registrado" + a);
+        });
+        post("/Productos/ProductoSellado", (req, res) -> {
+            Usuario u = usuarioDeLaPeticion(req);
+            if (u.getTipoUsuario() != Rol.ADMINISTRADOR) {
+                return error(res, 403, "Accion reservada para administradores");
+            }
+            ProductoSellado ps = gson.fromJson(req.body(), ProductoSellado.class);
+
+            if (ps.getIdProducto() == null) {
+                return error(res, 400, "Falta el 'IdProducto'");
+            }
+            if (ps.getNombre() == null) {
+                return error(res, 400, "Pon el 'nombre' del producto");
+            }
+            if (ps.getPrecioUSD() == 0) {
+                return error(res, 400, "Cual es el valor de 'precioUSD'?");
+            }
+
+            controladorInventario.agregarProducto(ps);
+            res.status(201);
+
+            return gson.toJson("Producto sellado registrado" + ps);
+        });
+
     }
 
     // ---------- Auxiliares  ----------

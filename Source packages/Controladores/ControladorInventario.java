@@ -127,9 +127,21 @@ public class ControladorInventario {
         return contenidoBooster();
     }
 
-    public Booster crearBooster(Booster booster) {
+    public Booster buscarBooster(Inventario inv, String idProducto) {
+        if (inv.getGeneral().isEmpty()) {
+            return null;
+        }
+        for (Producto p : inv.getGeneral()) {
+            if (p.getIdProducto() == idProducto) {
+                if (p instanceof Booster) {
+                    Booster b = (Booster) p;
+                    return b;
+                }
+            }
+        }
         
         return null;
+
     }
 
     public List<Producto> listarProductos() {

@@ -41,8 +41,7 @@ public class TiendaCartasApi {
     private static final Persistencia persistencia = new Persistencia();
     private static final UsuarioControlador usuarioControlador = new UsuarioControlador(persistencia);
     private static final TorneoControlador torneoControlador = new TorneoControlador(persistencia);
-    private static final ControladorInventario controladorInventario
-            = new ControladorInventario(persistencia);
+    private static final ControladorInventario controladorInventario = new ControladorInventario(persistencia);
     private static final ControladorCompra controladorCompra = new ControladorCompra(persistencia);
 
     public static void iniciar() {
@@ -304,12 +303,15 @@ public class TiendaCartasApi {
 
         post("/Productos/Single", (req, res) -> {
             Usuario u = usuarioDeLaPeticion(req);
+            if(u == null){
+                return error(res, 400, "Usuario no identificado");
+            }
             if (u.getTipoUsuario() != Rol.ADMINISTRADOR) {
                 return error(res, 403, "Accion reservada para administradores");
             }
             Single s = gson.fromJson(req.body(), Single.class);
-            //Single(String idCompra, String nombre, double precioUSD, Rareza rareza)
-            if (s.getIdProducto() == null) {
+
+            if (s.getIdProducto() == null) { 
                 return error(res, 400, "Falta el 'IdProducto'");
             }
             if (s.getNombre() == null) {
@@ -324,7 +326,7 @@ public class TiendaCartasApi {
             controladorInventario.agregarProducto(s);
             res.status(201);
 
-            return gson.toJson("Single regitrado" + s);
+            return gson.toJson(s);
         });
 
         post("/Productos/Booster", (req, res) -> {
@@ -351,7 +353,7 @@ public class TiendaCartasApi {
             controladorInventario.agregarProducto(b);
             res.status(201);
 
-            return gson.toJson("Booster registrado" + b);
+            return gson.toJson(b);
         });
         post("/Productos/Accesorio", (req, res) -> {
             Usuario u = usuarioDeLaPeticion(req);
@@ -373,7 +375,7 @@ public class TiendaCartasApi {
             controladorInventario.agregarProducto(a);
             res.status(201);
 
-            return gson.toJson("Accesorio registrado" + a);
+            return gson.toJson(a);
         });
         post("/Productos/ProductoSellado", (req, res) -> {
             Usuario u = usuarioDeLaPeticion(req);
@@ -395,7 +397,7 @@ public class TiendaCartasApi {
             controladorInventario.agregarProducto(ps);
             res.status(201);
 
-            return gson.toJson("Producto sellado registrado" + ps);
+            return gson.toJson(ps);
         });
 
     }

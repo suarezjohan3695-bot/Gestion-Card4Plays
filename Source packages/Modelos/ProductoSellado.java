@@ -10,7 +10,7 @@ package Modelos;
  */
 public class ProductoSellado extends Producto {
     
-    public ProductoSellado(String idProducto, String nombre, double precioUSD) throws Exception{
+    public ProductoSellado(String idProducto, String nombre, double precioUSD){
         super(idProducto,nombre,precioUSD);
     }
     

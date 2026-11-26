@@ -16,7 +16,7 @@ public class Booster extends Producto {
     private List<Single> contenido;
 
     public Booster(List<Single> contenido, String idProducto, String nombre,
-            double precioUSD) throws Exception {
+            double precioUSD){
         super(idProducto, nombre, precioUSD);
         this.contenido = contenido;
     }

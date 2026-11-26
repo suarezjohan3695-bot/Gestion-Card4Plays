@@ -16,16 +16,20 @@ public class Producto {
     private double precioCOP;
     private TasaCambio tasaCambio;
 
-    public Producto(String idProducto, String nombre, double precioUSD) throws Exception {
+    public Producto(String idProducto, String nombre, double precioUSD){
         this.idProducto = idProducto;
         this.nombre = nombre;
-        this.tasaCambio = new TasaCambio();
         this.precioUSD = precioUSD;
-        this.precioCOP = tasaCambio.getCop(); 
+        this.precioCOP = 0;
         ;
+    }
+    
+    public double calcularCOP(){
+        return precioUSD * tasaCambio.getCop();
     }
 
     public String getIdProducto() {
+        
         return idProducto;
     }
 

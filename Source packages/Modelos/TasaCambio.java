@@ -52,7 +52,7 @@ public class TasaCambio {
             System.out.println("La API no respondio: se obtiene tasa por defecto: ");
             COP = "34000";
         }
-        System.out.println("La API respondio Correctamente: ");
+        
         return Double.parseDouble(COP);
 
     }

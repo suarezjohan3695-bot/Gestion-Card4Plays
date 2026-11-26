@@ -21,12 +21,18 @@ import java.util.Random;
  */
 public class ControladorInventario {
 
-    private static final Random random = new Random();
+    private final Random random = new Random();
+    private final TasaCambio tasaCambio;
     private Inventario inventario;
     private final Persistencia persistencia;
 
     public ControladorInventario(Persistencia persistencia) {
         this.persistencia = persistencia;
+        try {
+            this.tasaCambio = new TasaCambio();
+        } catch (Exception e) {
+            throw new RuntimeException("No se pudo obtener la tasa de cambio", e);
+        }
         this.inventario = new Inventario();
         for (Producto p : persistencia.cargarProductos()) {
             inventario.getGeneral().add(p);
@@ -52,6 +58,7 @@ public class ControladorInventario {
         if (buscarProducto(p.getIdProducto()) != null) {
             return false;
         }
+        p.setPrecioCOP(tasaCambio.getCop() * p.getPrecioUSD());
         inventario.getGeneral().add(p);
         guardar();
         return true;
@@ -139,7 +146,7 @@ public class ControladorInventario {
                 }
             }
         }
-        
+
         return null;
 
     }

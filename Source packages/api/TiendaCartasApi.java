@@ -288,15 +288,18 @@ public class TiendaCartasApi {
             Cliente c = (Cliente) u;
             Inventario ip = c.getPertenencias();
             if (ip.getGeneral().isEmpty()) {
-                return ("Tu inventario esta vacio"); 
+                return ("Tu inventario esta vacio");
             }
-                if(controladorInventario.buscarBooster(ip,":idProducto")){
-                    
-                }
-            
+            Booster b = controladorInventario.buscarBooster(ip, ":idProducto");
+            if (b == null) {
+                return error(res, 404, "Este booster no se encuentra en tu inventario");
 
-        
-            
+            }
+            List<Single> contenido = b.getContenido();
+            ip.getGeneral().remove(b);
+            res.status(200);
+            return gson.toJson(contenido);
+
         });
 
         post("/Productos/Single", (req, res) -> {

@@ -267,7 +267,7 @@ public class TiendaCartasApi {
         });
         get("/Productos/:id", (req, res) -> {
 
-            Usuario u = usuarioControlador.buscarCliente(":id");
+            Usuario u = usuarioControlador.buscarCliente(req.params(":id"));
             if (u != null) {
                 return error(res, 404, "Usuario no encontrado");
             } else if (u.getTipoUsuario() == Rol.CLIENTE) {
@@ -282,7 +282,7 @@ public class TiendaCartasApi {
 
         });
         get("/Productos/:idUsuario/abrirBooster/:idProducto", (req, res) -> {
-            Usuario u = usuarioControlador.buscarCliente(":idUsuario");
+            Usuario u = usuarioControlador.buscarCliente(req.params(":idUsuario"));
             if (u == null) {
                 return error(res, 404, "Usuario no encontrado");
 
@@ -294,7 +294,7 @@ public class TiendaCartasApi {
             if (ip.getGeneral().isEmpty()) {
                 return ("Tu inventario esta vacio");
             }
-            Booster b = controladorInventario.buscarBooster(ip, ":idProducto");
+            Booster b = controladorInventario.buscarBooster(ip, req.params(":idProducto"));
             if (b == null) {
                 return error(res, 404, "Este booster no se encuentra en tu inventario");
 
@@ -430,7 +430,7 @@ public class TiendaCartasApi {
                 return error(res, 401, "Se requiere autenticacion con credenciales validas");
             } else if (usuarioDeLaPeticion(req).getTipoUsuario() == Rol.ADMINISTRADOR) {
                 return error(res, 403, "Admin no puede ver historial de compras");
-            } else if (usuarioDeLaPeticion(req) != usuarioControlador.buscarCliente(":id")) {
+            } else if (usuarioDeLaPeticion(req) != usuarioControlador.buscarCliente(req.params(":id"))) {
                 return error(res, 403, "Usted no puede acceder al historial de compras de otro cliente");
 
             }
@@ -448,10 +448,10 @@ public class TiendaCartasApi {
                 return error(res, 401, "Se requiere autenticacion con credenciales validas");
             } else if (usuarioDeLaPeticion(req).getTipoUsuario() == Rol.ADMINISTRADOR) {
                 return error(res, 403, "Admin no puede ver realizar compras");
-            } else if (usuarioDeLaPeticion(req) != usuarioControlador.buscarCliente(":id")) {
+            } else if (usuarioDeLaPeticion(req) != usuarioControlador.buscarCliente(req.params(req.params(":id")))) {
                 return error(res, 403, "Usted no puede hacer compras a nombre de otro cliente");
             }
-            Usuario u = usuarioControlador.buscarCliente(":id");
+            Usuario u = usuarioControlador.buscarCliente(req.params(":id"));
             Type tipoLista = new TypeToken<List<DetalleCompra>>() {
             }.getType();
             List<DetalleCompra> items = gson.fromJson(req.body(), tipoLista);

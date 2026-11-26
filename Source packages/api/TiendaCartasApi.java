@@ -448,7 +448,7 @@ public class TiendaCartasApi {
                 return error(res, 401, "Se requiere autenticacion con credenciales validas");
             } else if (usuarioDeLaPeticion(req).getTipoUsuario() == Rol.ADMINISTRADOR) {
                 return error(res, 403, "Admin no puede ver realizar compras");
-            } else if (usuarioDeLaPeticion(req) != usuarioControlador.buscarCliente(req.params(req.params(":id")))) {
+            } else if (usuarioDeLaPeticion(req) != usuarioControlador.buscarCliente(req.params(":id"))) {
                 return error(res, 403, "Usted no puede hacer compras a nombre de otro cliente");
             }
             Usuario u = usuarioControlador.buscarCliente(req.params(":id"));
@@ -474,7 +474,7 @@ public class TiendaCartasApi {
                         return error(res, 400, "Un booster solo se compra de a uno");
                     }
                     Cliente c = (Cliente) u;
-                    c.getPertenencias().getGeneral().add(p);
+                    c.getPertenencias().getGeneral().add(p);  
                     productos.remove(p);
                 }
             }

@@ -55,6 +55,7 @@ public class TiendaCartasApi {
         rutasUsuarios();
         rutasTorneos();
         rutasProductos();
+        rutasCompras();
 
         System.out.println("API corriendo en http://localhost:" + puerto);
     }

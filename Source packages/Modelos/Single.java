@@ -13,7 +13,7 @@ public class Single extends Producto {
     private Rareza rareza;
 
     public Single(String idCompra, String nombre, double precioUSD,
-            Rareza rareza) {
+            Rareza rareza) throws Exception {
         super(idCompra, nombre, precioUSD);
         this.rareza = rareza;
     }

@@ -4,6 +4,7 @@
  */
 package Cards4play;
 
+import Modelos.TasaCambio;
 import api.TiendaCartasApi;
 
 /**

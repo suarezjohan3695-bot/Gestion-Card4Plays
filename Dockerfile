@@ -4,7 +4,6 @@ WORKDIR /build
 COPY pom.xml .
 COPY ["Source packages", "./Source packages"]
 RUN mvn -q clean package
-# ===== Etapa 2: imagen liviana que solo ejecuta el jar =====
 FROM eclipse-temurin:17-jre
 WORKDIR /app
 COPY --from=build /build/target/gestionCards4play-1.0-jar-with-dependencies.jar app.jar

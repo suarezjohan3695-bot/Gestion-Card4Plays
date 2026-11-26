@@ -20,11 +20,10 @@ public class ControladorInventario {
     private Inventario inventario;
     private final Persistencia persistencia;
 
-    public ControladorInventario(Persistencia persistencia, TasaCambio tasa) {
+    public ControladorInventario(Persistencia persistencia) {
     this.persistencia = persistencia;
     this.inventario = new Inventario();
-    for (Producto p : persistencia.cargarProductos()) {
-        p.setTasaCambio(tasa); 
+    for (Producto p : persistencia.cargarProductos()) { 
         inventario.getGeneral().add(p);
     }
 }

@@ -16,11 +16,12 @@ public class Producto {
     private double precioCOP;
     private TasaCambio tasaCambio;
 
-    public Producto(String idProducto, String nombre, double precioUSD) {
+    public Producto(String idProducto, String nombre, double precioUSD) throws Exception {
         this.idProducto = idProducto;
         this.nombre = nombre;
+        this.tasaCambio = new TasaCambio();
         this.precioUSD = precioUSD;
-        this.precioCOP = 0; // Se le dara valor cuando se integre api externa por un medio de un metodo
+        this.precioCOP = tasaCambio.getCop(); 
         ;
     }
 

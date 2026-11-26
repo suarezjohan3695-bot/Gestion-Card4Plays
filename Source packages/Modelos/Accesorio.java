@@ -10,7 +10,7 @@ package Modelos;
  */
 public class Accesorio extends Producto {
 
-    public Accesorio(String idProducto, String nombre, double precioUSD, TasaCambio tasaCambio) {
+    public Accesorio(String idProducto, String nombre, double precioUSD, TasaCambio tasaCambio) throws Exception {
         super(idProducto, nombre, precioUSD);
     }
     

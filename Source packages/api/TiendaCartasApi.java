@@ -32,11 +32,10 @@ public class TiendaCartasApi {
 
     private static final Gson gson = new Gson();
     private static final Persistencia persistencia = new Persistencia();
-    private static final TasaCambio tasaCambio = new TasaCambio();
     private static final UsuarioControlador usuarioControlador = new UsuarioControlador(persistencia);
     private static final TorneoControlador torneoControlador = new TorneoControlador(persistencia);
     private static final ControladorInventario controladorInventario =
-            new ControladorInventario(persistencia, tasaCambio);
+            new ControladorInventario(persistencia);
     private static final ControladorCompra controladorCompra = new ControladorCompra(persistencia);
 
     public static void iniciar() {

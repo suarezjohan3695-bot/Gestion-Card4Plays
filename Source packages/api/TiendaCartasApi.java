@@ -473,6 +473,8 @@ public class TiendaCartasApi {
                     if (item.getCantidad() != 1) {
                         return error(res, 400, "Un booster solo se compra de a uno");
                     }
+                    Cliente c = (Cliente) u;
+                    c.getPertenencias().getGeneral().add(p);
                     productos.remove(p);
                 }
             }

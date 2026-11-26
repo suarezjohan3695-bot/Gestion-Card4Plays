@@ -131,7 +131,7 @@ public class ControladorInventario {
             Single s = alAzar(existencias);
             contenidoBooster.add(s);
         }
-        return contenidoBooster();
+        return contenidoBooster;
     }
 
     public Booster buscarBooster(Inventario inv, String idProducto) {
@@ -150,11 +150,7 @@ public class ControladorInventario {
         return null;
 
     }
-
-    public List<Producto> listarProductos() {
-        return inventario.getGeneral();
-    }
-
+    
     public void guardar() {
         persistencia.guardarProductos(inventario.getGeneral());
     }

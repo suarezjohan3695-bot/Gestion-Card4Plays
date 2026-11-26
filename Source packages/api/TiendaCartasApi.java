@@ -256,7 +256,7 @@ public class TiendaCartasApi {
         get("/Productos", (req, res) -> {
             List<Producto> prod = controladorInventario.getInventario();
             if (!prod.isEmpty()) {
-                return gson.toJson(controladorInventario.getInventario());
+                return gson.toJson(vistaProductos(controladorInventario.getInventario()));
             }
             return ("Inventario vacio");
         });
@@ -303,7 +303,7 @@ public class TiendaCartasApi {
 
         post("/Productos/Single", (req, res) -> {
             Usuario u = usuarioDeLaPeticion(req);
-            if(u == null){
+            if (u == null) {
                 return error(res, 400, "Usuario no identificado");
             }
             if (u.getTipoUsuario() != Rol.ADMINISTRADOR) {
@@ -311,7 +311,7 @@ public class TiendaCartasApi {
             }
             Single s = gson.fromJson(req.body(), Single.class);
 
-            if (s.getIdProducto() == null) { 
+            if (s.getIdProducto() == null) {
                 return error(res, 400, "Falta el 'IdProducto'");
             }
             if (s.getNombre() == null) {
@@ -323,7 +323,9 @@ public class TiendaCartasApi {
             if (s.getRareza() == null) {
                 return error(res, 400, "La carta debe de tener una 'rareza'");
             }
-            controladorInventario.agregarProducto(s);
+            if (!controladorInventario.agregarProducto(s)) {
+                return error(res, 409, "Ya existe un producto con este idProducto");
+            }
             res.status(201);
 
             return gson.toJson(s);
@@ -347,13 +349,15 @@ public class TiendaCartasApi {
             if (b.getPrecioUSD() == 0) {
                 return error(res, 400, "Cual es el valor de 'precioUSD'?");
             }
-            if (b.getContenido() == null) {
+            if (b.getContenido() == null || b.getContenido().size() < 10) {
                 return error(res, 400, "No hay cartas suficientes para crear un booster");
             }
-            controladorInventario.agregarProducto(b);
+            if (!controladorInventario.agregarProducto(b)) {
+                return error(res, 409, "Ya existe un producto con este idProducto");
+            }
             res.status(201);
 
-            return gson.toJson(b);
+            return gson.toJson(vistaBooster(b));
         });
         post("/Productos/Accesorio", (req, res) -> {
             Usuario u = usuarioDeLaPeticion(req);
@@ -372,7 +376,9 @@ public class TiendaCartasApi {
                 return error(res, 400, "Cual es el valor de 'precioUSD'?");
             }
 
-            controladorInventario.agregarProducto(a);
+            if (!controladorInventario.agregarProducto(a)) {
+                return error(res, 409, "Ya existe un producto con este idProducto");
+            }
             res.status(201);
 
             return gson.toJson(a);
@@ -394,7 +400,9 @@ public class TiendaCartasApi {
                 return error(res, 400, "Cual es el valor de 'precioUSD'?");
             }
 
-            controladorInventario.agregarProducto(ps);
+            if (!controladorInventario.agregarProducto(ps)) {
+                return error(res, 409, "Ya existe un producto con este idProducto");
+            }
             res.status(201);
 
             return gson.toJson(ps);
@@ -454,5 +462,31 @@ public class TiendaCartasApi {
         m.put("maxParticipantes", t.getMaxParticipantes());
         m.put("activo", t.isActivo());
         return m;
+    }
+
+    private static Map<String, Object> vistaBooster(Booster b) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("contenido", "cerrado");
+        m.put("idProducto", b.getIdProducto());
+        m.put("nombre", b.getNombre());
+        m.put("precioUSD", b.getPrecioUSD());
+        m.put("precioCOP", b.getPrecioCOP());
+        return m;
+    }
+
+    private static List<Object> vistaProductos(List<Producto> general) {
+        List<Object> respuesta = new ArrayList<>();
+        for (Producto p : general) {
+            if (p instanceof Booster) {
+                Booster b = (Booster) p;
+                Map<String, Object> m = vistaBooster(b);
+                respuesta.add(m);
+
+            } else {
+                respuesta.add(p);
+            }
+        }
+        return respuesta;
+
     }
 }

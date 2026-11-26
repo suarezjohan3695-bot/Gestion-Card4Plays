@@ -22,5 +22,11 @@ public class DetalleCompra {
     public double calcularSubtotal() {
         return producto.getPrecioCOP() * cantidad;
     }
+    public Producto getProducto(){
+        return this.producto;
+    }
+    public int getCantidad(){
+        return cantidad;
+    }
 
 }

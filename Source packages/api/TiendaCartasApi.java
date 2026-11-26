@@ -12,6 +12,8 @@ import Datos.Persistencia;
 import Modelos.Accesorio;
 import Modelos.Booster;
 import Modelos.Cliente;
+import Modelos.Compra;
+import Modelos.DetalleCompra;
 import Modelos.Inventario;
 import Modelos.Producto;
 import Modelos.ProductoSellado;
@@ -24,6 +26,8 @@ import Modelos.Usuario;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
+import java.lang.reflect.Type;
 import spark.Filter;
 import spark.Request;
 import spark.Response;
@@ -304,7 +308,7 @@ public class TiendaCartasApi {
         post("/Productos/Single", (req, res) -> {
             Usuario u = usuarioDeLaPeticion(req);
             if (u == null) {
-                return error(res, 400, "Usuario no identificado");
+                return error(res, 401, "Credenciales invalidas");
             }
             if (u.getTipoUsuario() != Rol.ADMINISTRADOR) {
                 return error(res, 403, "Accion reservada para administradores");
@@ -333,6 +337,9 @@ public class TiendaCartasApi {
 
         post("/Productos/Booster", (req, res) -> {
             Usuario u = usuarioDeLaPeticion(req);
+            if (u == null) {
+                return error(res, 401, "Credenciales invalidas");
+            }
             if (u.getTipoUsuario() != Rol.ADMINISTRADOR) {
                 return error(res, 403, "Accion reservada para administradores");
             }
@@ -361,6 +368,9 @@ public class TiendaCartasApi {
         });
         post("/Productos/Accesorio", (req, res) -> {
             Usuario u = usuarioDeLaPeticion(req);
+            if (u == null) {
+                return error(res, 401, "Credenciales invalidas");
+            }
             if (u.getTipoUsuario() != Rol.ADMINISTRADOR) {
                 return error(res, 403, "Accion reservada para administradores");
             }
@@ -385,6 +395,9 @@ public class TiendaCartasApi {
         });
         post("/Productos/ProductoSellado", (req, res) -> {
             Usuario u = usuarioDeLaPeticion(req);
+            if (u == null) {
+                return error(res, 401, "Credenciales no validas");
+            }
             if (u.getTipoUsuario() != Rol.ADMINISTRADOR) {
                 return error(res, 403, "Accion reservada para administradores");
             }
@@ -410,7 +423,66 @@ public class TiendaCartasApi {
 
     }
 
-    // ---------- Auxiliares  ----------
+    public static void rutasCompras() {
+        get("/compras/:id", (req, res) -> {
+            if (usuarioDeLaPeticion(req) == null) {
+                return error(res, 401, "Se requiere autenticacion con credenciales validas");
+            } else if (usuarioDeLaPeticion(req).getTipoUsuario() == Rol.ADMINISTRADOR) {
+                return error(res, 403, "Admin no puede ver historial de compras");
+            } else if (usuarioDeLaPeticion(req) != usuarioControlador.buscarCliente(":id")) {
+                return error(res, 403, "Usted no puede acceder al historial de compras de otro cliente");
+
+            }
+            Cliente c = (Cliente) usuarioControlador.buscarCliente(":id");
+            List<Compra> historial = controladorCompra.historialDeCliente(":id");
+            if (historial.isEmpty()) {
+                return gson.toJson("No existen compras hechas por usted");
+            }
+            res.status(200);
+            return gson.toJson(historial);
+        });
+
+        post("/compras/:id", (req, res) -> {
+            if (usuarioDeLaPeticion(req) == null) {
+                return error(res, 401, "Se requiere autenticacion con credenciales validas");
+            } else if (usuarioDeLaPeticion(req).getTipoUsuario() == Rol.ADMINISTRADOR) {
+                return error(res, 403, "Admin no puede ver realizar compras");
+            } else if (usuarioDeLaPeticion(req) != usuarioControlador.buscarCliente(":id")) {
+                return error(res, 403, "Usted no puede hacer compras a nombre de otro cliente");
+            }
+            Usuario u = usuarioControlador.buscarCliente(":id");
+            Type tipoLista = new TypeToken<List<DetalleCompra>>() {
+            }.getType();
+            List<DetalleCompra> items = gson.fromJson(req.body(), tipoLista);
+            if (items == null || items.isEmpty()) {
+                return error(res, 400, "Debe haber al menos un item");
+            }
+            for (DetalleCompra item : items) {
+                List<Producto> productos = controladorInventario.getInventario();
+                Producto p = controladorInventario.buscarProducto(item.getProducto().getIdProducto());
+
+                if (item.getProducto() == null) {
+                    return error(res, 400, "No hay ningun valor");
+                }
+
+                if (p == null) {
+                    return error(res, 400, "Este producto no esta en el inventario");
+                }
+                if (p instanceof Booster) {
+                    if (item.getCantidad() != 1) {
+                        return error(res, 400, "Un booster solo se compra de a uno");
+                    }
+                    productos.remove(p);
+                }
+            }
+            Compra compra = new Compra(UUID.randomUUID().toString(), u.getIdUsuario(), items);
+            controladorCompra.crearCompra(compra);
+            res.status(201);
+            return gson.toJson(compra);
+
+        });
+    }
+        // ---------- Auxiliares  ----------
     private static String error(Response res, int codigo, String mensaje) {
         res.status(codigo);
         return gson.toJson(Map.of("error", mensaje));

@@ -18,10 +18,10 @@ public class Compra {
     private LocalDate fechaCompra;
     private List<DetalleCompra> comprados;
 
-    public Compra(String idCompra,String idCliente, LocalDate fechaCompra, List<DetalleCompra> comprados) {
+    public Compra(String idCompra,String idCliente, List<DetalleCompra> comprados) {
         this.idCompra = idCompra;
         this.idCliente = idCliente;
-        this.fechaCompra = fechaCompra;
+        this.fechaCompra = LocalDate.now();
         this.comprados = comprados;
     }
     

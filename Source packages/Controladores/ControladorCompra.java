@@ -41,7 +41,7 @@ public class ControladorCompra {
         if (buscarCompraId(compra.getIdCompra()) != null) {
             return false;
         }
-        compras.add(compra);
+        compras.add(compra);    
         persistencia.guardarCompras(compras);
         return true;
     }

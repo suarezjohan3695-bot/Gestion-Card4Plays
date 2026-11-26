@@ -21,7 +21,7 @@ public class Booster extends Producto {
         this.contenido = contenido;
     }
 
-    private List<Single> getContenido() {
+    public List<Single> getContenido() {
         return contenido;
     }
 

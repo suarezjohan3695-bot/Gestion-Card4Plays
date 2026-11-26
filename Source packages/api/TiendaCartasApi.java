@@ -459,12 +459,13 @@ public class TiendaCartasApi {
                 return error(res, 400, "Debe haber al menos un item");
             }
             for (DetalleCompra item : items) {
-                List<Producto> productos = controladorInventario.getInventario();
-                Producto p = controladorInventario.buscarProducto(item.getProducto().getIdProducto());
+                
 
                 if (item.getProducto() == null) {
                     return error(res, 400, "No hay ningun valor");
                 }
+                List<Producto> productos = controladorInventario.getInventario();
+                Producto p = controladorInventario.buscarProducto(item.getProducto().getIdProducto());
 
                 if (p == null) {
                     return error(res, 400, "Este producto no esta en el inventario");
